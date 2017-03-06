@@ -13,6 +13,7 @@ requires = [
     'colander',
     'waitress',
     'pyramid_jwt',
+    'pymongo',
     ]
 
 tests_require = [
