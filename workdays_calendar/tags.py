@@ -5,6 +5,15 @@ from bson import ObjectId
 
 _collection='tags'
 
+def init_db(db,settings):
+    required_tags=['holiday']
+    for tag in required_tags:
+        if db[_collection].find_one({'name':tag}) is None:
+            db[_collection].insert({
+                    'name': tag,
+                    'color': 'red'
+                })
+
 @colander.deferred
 def name_validator(node,kw):
     db=kw['db']

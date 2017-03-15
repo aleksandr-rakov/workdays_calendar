@@ -9,6 +9,17 @@ from pyramid.security import NO_PERMISSION_REQUIRED
 
 _collection='users'
 
+def init_db(db,settings):
+    if db[_collection].find_one() is None:
+        new_user={
+            'name': 'admin',
+            'login': 'admin',
+            'disabled': False,
+            'password': Hasher.generate('admin')
+        }
+        print "Creating new user admin with passord admin"
+        db[_collection].insert(new_user)
+
 def authenticate(request,login,password):
     userid=None
     message=''

@@ -6,12 +6,14 @@ import datetime
 
 _collection='calendar'
 
+def init_db(db,settings):
+    gen_year(db,datetime.datetime.now().year)
+
 def chunkify(lst,n):
     return [ lst[i*n:i*n+n] for i in xrange(len(lst)/n) ]
 
-def run(settings,db):
+def gen_year(db,year):
     c=calendar.Calendar(0)
-    year=datetime.datetime.now().year
 
     holiday_tag=db.tags.find_one({'name':'holiday'})
 
