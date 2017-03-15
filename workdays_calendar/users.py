@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import workdays_calendar.api as api
 import colander
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound,HTTPForbidden
 from bson import ObjectId
 from time import sleep
 from workdays_calendar.auth import Hasher
@@ -99,6 +99,8 @@ class UsersViews(api.BaseViews):
     def profile(self):
         userid=self.request.userid
         user=self.db[_collection].find_one({'_id':ObjectId(userid)})
+        if user is None:
+            raise HTTPForbidden()
         return {
             'userid': userid,
             'name': user['name']
