@@ -6,6 +6,7 @@ import user from './components/user'
 import calendar from './components/calendar'
 import tags from './components/tags'
 import login from './components/login'
+import notfound from './components/notfound'
 import auth from './auth'
 
 Vue.use(Router)
@@ -52,6 +53,11 @@ const routes = [
       name: 'calendar',
       component: calendar,
       meta: { auth: true },
+    },
+    {
+      path: '*',
+      name: 'notfound',
+      component: notfound
     }
 ]
 
