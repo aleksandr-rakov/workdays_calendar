@@ -2,14 +2,14 @@
 import workdays_calendar.api as api
 import colander
 from bson import ObjectId
+from workdays_calendar.collection_names import TAGS_COLLECTION
 
-_collection='tags'
 
 def init_db(db,settings):
     required_tags=['holiday']
     for tag in required_tags:
-        if db[_collection].find_one({'name':tag}) is None:
-            db[_collection].insert({
+        if db[TAGS_COLLECTION].find_one({'name':tag}) is None:
+            db[TAGS_COLLECTION].insert({
                     'name': tag,
                     'color': 'red'
                 })
@@ -20,7 +20,7 @@ def name_validator(node,kw):
     tagid=kw['tagid']
     def validator(form, value):
         colander.Length(max=50)(form, value)
-        if db[_collection].find_one({'name':value,'_id':{'$ne':tagid}}):
+        if db[TAGS_COLLECTION].find_one({'name':value,'_id':{'$ne':tagid}}):
             raise colander.Invalid(
                     form, 
                     u'Тег с таким именем уже есть'
@@ -40,7 +40,7 @@ class TagsViews(api.BaseViews):
 
     @api.view(path='tags', method='GET')
     def view_tags(self):
-        result=list(self.db[_collection].find({},{'password':0}).sort('name'))
+        result=list(self.db[TAGS_COLLECTION].find({},{'password':0}).sort('name'))
         
         return result
 
@@ -51,7 +51,7 @@ class TagsViews(api.BaseViews):
                 tagid=None
             )
         data=self.validated_data(schema)
-        self.db[_collection].insert(
+        self.db[TAGS_COLLECTION].insert(
             data
         )
         return {
@@ -66,7 +66,7 @@ class TagsViews(api.BaseViews):
                 tagid=tagid
             )
         data=self.validated_data(schema)
-        self.db[_collection].update(
+        self.db[TAGS_COLLECTION].update(
             {'_id': tagid},
             {'$set': data}
         )

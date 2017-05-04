@@ -6,11 +6,11 @@ from bson import ObjectId
 from time import sleep
 from workdays_calendar.auth import Hasher
 from pyramid.security import NO_PERMISSION_REQUIRED
+from workdays_calendar.collection_names import USERS_COLLECTION
 
-_collection='users'
 
 def init_db(db,settings):
-    if db[_collection].find_one() is None:
+    if db[USERS_COLLECTION].find_one() is None:
         new_user={
             'name': 'admin',
             'login': 'admin',
@@ -18,7 +18,7 @@ def init_db(db,settings):
             'password': Hasher.generate('admin')
         }
         print "Creating new user admin with passord admin"
-        db[_collection].insert(new_user)
+        db[USERS_COLLECTION].insert(new_user)
 
 def authenticate(request,login,password):
     userid=None
@@ -26,7 +26,7 @@ def authenticate(request,login,password):
     if request.userid:
         message='Already logged in'
     if login and password:
-        user=request.db[_collection].find_one({'login':login})
+        user=request.db[USERS_COLLECTION].find_one({'login':login})
         if user and Hasher.check(user['password'],password):
             if user['disabled']:
                 message = u'Аккаунт заблокирован'
@@ -54,7 +54,7 @@ def login_validator(node,kw):
     def validator(form, value):
         colander.Length(max=50)(form, value)
         """Проверяем не занят ли логин"""
-        if db[_collection].find_one({'login':value,'_id':{'$ne':userid}}):
+        if db[USERS_COLLECTION].find_one({'login':value,'_id':{'$ne':userid}}):
             raise colander.Invalid(
                     form, 
                     u'Этот логин уже зарегистрирован'
@@ -98,7 +98,7 @@ class UsersViews(api.BaseViews):
     @api.view(path='profile', method='GET')
     def profile(self):
         userid=self.request.userid
-        user=self.db[_collection].find_one({'_id':ObjectId(userid)})
+        user=self.db[USERS_COLLECTION].find_one({'_id':ObjectId(userid)})
         if user is None:
             raise HTTPForbidden()
         return {
@@ -109,13 +109,13 @@ class UsersViews(api.BaseViews):
     @api.view(path='users', method='GET')
     def view_users(self):
 
-        result=list(self.db[_collection].find({},{'password':0}).sort('name'))
+        result=list(self.db[USERS_COLLECTION].find({},{'password':0}).sort('name'))
         
         return result
 
     @api.view(path='users/{user_id}', method='GET')
     def view_user(self):
-        user=self.db[_collection].find_one({'_id': ObjectId(self.params['user_id'])})
+        user=self.db[USERS_COLLECTION].find_one({'_id': ObjectId(self.params['user_id'])})
         user['password']=''
         if user is None:
             raise HTTPNotFound()
@@ -129,7 +129,7 @@ class UsersViews(api.BaseViews):
             )
         data=self.validated_data(schema)
         data['password']=Hasher.generate(data['password'])
-        self.db[_collection].insert(
+        self.db[USERS_COLLECTION].insert(
             data
         )
         return {
@@ -144,7 +144,7 @@ class UsersViews(api.BaseViews):
                 userid=userid
             )
         data=self.validated_data(schema)
-        self.db[_collection].update(
+        self.db[USERS_COLLECTION].update(
             {'_id': userid},
             {'$set': data}
         )
@@ -158,7 +158,7 @@ class UsersViews(api.BaseViews):
         schema=updatePasswordSchema()
         data=self.validated_data(schema)
         data['password']=Hasher.generate(data['password'])
-        self.db[_collection].update(
+        self.db[USERS_COLLECTION].update(
             {'_id': userid},
             {'$set': data}
         )

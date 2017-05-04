@@ -3,8 +3,8 @@ import workdays_calendar.api as api
 import calendar
 import colander
 import datetime
+from workdays_calendar.collection_names import CALENDAR_COLLECTION,TAGS_COLLECTION
 
-_collection='calendar'
 
 def init_db(db,settings):
     gen_year(db,datetime.datetime.now().year)
@@ -15,7 +15,7 @@ def chunkify(lst,n):
 def gen_year(db,year):
     c=calendar.Calendar(0)
 
-    holiday_tag=db.tags.find_one({'name':'holiday'})
+    holiday_tag=db[TAGS_COLLECTION].find_one({'name':'holiday'})
 
     if holiday_tag is None:
         print "Tag not found"
@@ -26,9 +26,9 @@ def gen_year(db,year):
             if d and wd>=5:
                 day_int=year*10000+m*100+d
 
-                old=db[_collection].find_one({'day_int': day_int})
+                old=db[CALENDAR_COLLECTION].find_one({'day_int': day_int})
                 if not old:
-                    db[_collection].insert({
+                    db[CALENDAR_COLLECTION].insert({
                             'day_int': day_int,
                             'tags': [str(holiday_tag['_id'])],
                         })
@@ -49,7 +49,7 @@ class CalendarViews(api.BaseViews):
         year=int(self.params['year'])
         result=[]
 
-        days=self.db[_collection].find({'$and':[
+        days=self.db[CALENDAR_COLLECTION].find({'$and':[
                 {'day_int': {'$gte':year*10000}},
                 {'day_int': {'$lte':(year+1)*10000}}
             ]})
@@ -75,7 +75,7 @@ class CalendarViews(api.BaseViews):
         schema=dayUpdataSchema()
         data=self.validated_data(schema)
         day_int=int(self.params['day_int'])
-        self.db[_collection].update(
+        self.db[CALENDAR_COLLECTION].update(
                 {'day_int': day_int},
                 {'$set': {
                     'tags': data['tags'],
