@@ -32,6 +32,7 @@ def gen_year(db,year):
                             'day_int': day_int,
                             'tags': [str(holiday_tag['_id'])],
                         })
+
 class StringList(colander.SequenceSchema):
     items = colander.SchemaNode(
             colander.String()
