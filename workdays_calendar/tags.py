@@ -4,9 +4,10 @@ import colander
 from bson import ObjectId
 from workdays_calendar.collection_names import TAGS_COLLECTION
 
+HOLIDAY_TAG='holiday'
 
 def init_db(db,settings):
-    required_tags=['holiday']
+    required_tags=[HOLIDAY_TAG]
     for tag in required_tags:
         if db[TAGS_COLLECTION].find_one({'name':tag}) is None:
             db[TAGS_COLLECTION].insert({

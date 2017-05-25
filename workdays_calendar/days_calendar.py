@@ -12,6 +12,9 @@ def init_db(db,settings):
 def chunkify(lst,n):
     return [ lst[i*n:i*n+n] for i in xrange(len(lst)/n) ]
 
+def get_day_int(date):
+    return date.year*10000+date.month*100+date.day
+
 def gen_year(db,year):
     c=calendar.Calendar(0)
 
