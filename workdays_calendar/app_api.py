@@ -4,9 +4,12 @@ from workdays_calendar.days_calendar import get_day_int
 from workdays_calendar.tags import HOLIDAY_TAG
 import datetime
 
+def get_holiday_tag(db):
+    return db[TAGS_COLLECTION].find_one({'name': HOLIDAY_TAG})
 
-def is_holiday(db,day):
-    holiday_tag=db[TAGS_COLLECTION].find_one({'name': HOLIDAY_TAG})
+def is_holiday(db,day,holiday_tag=None):
+    if holiday_tag is None:
+        holiday_tag=get_holiday_tag(db)
     if not holiday_tag:
         return False
 
@@ -16,11 +19,32 @@ def is_holiday(db,day):
         return str(holiday_tag['_id']) in stored_day['tags']
     return False
 
+def is_holiday_today(db):
+    return is_holiday(db,datetime.date.today())
+
 def get_workdays_interval(db,start,num_days):
-    reached=0
+    holiday_tag=get_holiday_tag(db)
+
+    holidays_used=False
+    total_days=0
+
+    while is_holiday(db,start,holiday_tag):
+        start+=datetime.timedelta(days=1)
+        holidays_used=True
+        total_days+=1
+
     day=start
-    while reached!=num_days:
-        if not is_holiday(db,day):
-            reached+=1
+    drive_days=num_days
+    while drive_days>0:
         day+=datetime.timedelta(days=1)
-    return day
+        total_days+=1
+        if is_holiday(db,day,holiday_tag):
+            holidays_used=True
+        else:
+            drive_days-=1
+
+    return {
+        'end': day,
+        'total_days': total_days,
+        'holidays_used': holidays_used
+    }
