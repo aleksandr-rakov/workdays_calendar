@@ -12,7 +12,7 @@ requires = [
     'pyramid',
     'colander',
     'waitress',
-    'pyramid_jwt',
+    'pyramid_jwt==1.2',
     'pymongo',
     ]
 
